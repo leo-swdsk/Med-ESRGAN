@@ -1,0 +1,59 @@
+# folders
+.vscode
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+data/
+eval_results/
+splits/
+runs/
+
+# file types (general)
+*.pyc
+*.svg
+*.t7
+*.caffemodel
+*.mat
+*.json
+*.csv
+*.pdf
+
+# image files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.webp
+*.ico
+*.raw
+*.cr2
+*.nef
+*.arw
+*.dng
+*.heic
+*.heif
+
+# medical imaging
+*.dcm
+*.dicom
+*.ima
+*.img
+*.nii
+*.nii.gz
+*.hdr
+*.img.gz
+
+# tensor / model data
+*.npy
+*.npz
+*.pt
+*.pth
+*.ckpt
+*.tensor
+*.tfrecord
+*.h5
+*.hdf5
+*.pkl
+*.pickle
