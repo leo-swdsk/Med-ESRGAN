@@ -301,6 +301,22 @@ def main():
     out_base = os.path.basename(os.path.normpath(out_root))
     patients = [p for p in patients if os.path.basename(p) != out_base]
 
+    # Remove any container dirs themselves and previously preprocessed dirs (ending with 'pp')
+    container_names = {"dicom", "dicoms"}
+    patients = [p for p in patients if os.path.basename(p).lower() not in container_names]
+    patients = [p for p in patients if not os.path.basename(p).lower().endswith('pp')]
+
+    # Safety: exclude output base again in case of expansion
+    patients = [p for p in patients if os.path.basename(p) != out_base]
+
+    # De-duplicate by patient folder name to avoid counting the same patient from multiple containers
+    dedup_map = {}
+    for p in patients:
+        pid = os.path.basename(p)
+        if pid not in dedup_map:
+            dedup_map[pid] = p
+    patients = list(dedup_map.values())
+
     print(f"[Preproc] Starting resample to {args.target_spacing} mm for {len(patients)} patients")
     for p_dir in patients:
         pid = os.path.basename(p_dir)

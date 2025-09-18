@@ -1,23 +1,23 @@
-## Anleitung: ESRGAN‑Med – End‑to‑End Workflow (für PDF‑Export geeignet)
+## Anleitung: Med-ESRGAN – End‑to‑End Workflow 
 
-Hinweis: Führen Sie alle Befehle aus dem Ordner `ESRGAN` aus.
+Hinweis: Führen Sie alle Befehle aus dem Ordner `Med-ESRGAN` aus.
 
 ```bash
-cd ESRGAN
+cd Med-ESRGAN
 ```
 
 ### Überblick
 - **Ziel**: CT‑DICOMs vereinheitlichen (Pixel Spacing), trainieren (Vortraining + Feintuning), evaluieren (Testsplit), visualisieren (LR vs SR vs HR).
-- **Artefakte**: Resampled Daten in `ESRGAN/preprocessed_data/`, Trainingsläufe in `ESRGAN/runs/`, Evaluationsergebnisse in `ESRGAN/eval_results/`.
+- **Artefakte**: Resampled Daten in `Med-ESRGAN/preprocessed_data/`, Trainingsläufe in `Med-ESRGAN/runs/`, Evaluationsergebnisse in `Med-ESRGAN/eval_results/`.
 - **Setup**: Bitte das Projekt gemäß `README.md` einrichten (Abhängigkeiten, Datenpfade, Umgebungen).
-
+- **Hinweis**: Fertig trainierte Modelle können unter dem im Anhang C genannten Link heruntergeladen werden.
 ---
 
 ## 1) Vorverarbeitung: homogenes Pixel Spacing
 Script: `preprocess_resample_ct.py`
 
 Kurzbeschreibung:
-- Resampled CT‑DICOMs auf einheitliches in‑plane Pixel Spacing (Standard: 0.8 mm) und legt das Ergebnis standardmäßig unter `ESRGAN/preprocessed_data/` ab.
+- Resampled CT‑DICOMs auf einheitliches in‑plane Pixel Spacing (Standard: 0.8 mm) und legt das Ergebnis standardmäßig unter `Med-ESRGAN/preprocessed_data/` ab.
 
 Minimaler Befehl:
 ```bash
@@ -34,7 +34,7 @@ Wichtige Optionen:
 Script: `dump_patient_split.py`
 
 Kurzbeschreibung:
-- Erstellt deterministische Patienten‑Splits (Standard‑Seed 42) und schreibt die JSON nach `ESRGAN/splits/patient_split_seed42.json`.
+- Erstellt deterministische Patienten‑Splits (Standard‑Seed 42) und schreibt die JSON nach `Med-ESRGAN/splits/patient_split_seed42.json`.
 
 Minimaler Befehl:
 ```bash
@@ -42,7 +42,7 @@ python dump_patient_split.py --root "preprocessed_data"
 ```
 
 Wichtige Optionen:
-- `--seed`: Standard 42; `--output`: Standardpfad unter `ESRGAN/splits/`.
+- `--seed`: Standard 42; `--output`: Standardpfad unter `Med-ESRGAN/splits/`.
 
 ---
 
@@ -50,7 +50,7 @@ Wichtige Optionen:
 Script: `train_ct_sr.py`
 
 Kurzbeschreibung:
-- Trainiert das RRDB‑Modell mit L1‑Loss (ohne GAN). Artefakte (Checkpoints, Logs) landen automatisch unter `ESRGAN/runs/<laufname>/`.
+- Trainiert das RRDB‑Modell mit L1‑Loss (ohne GAN). Artefakte (Checkpoints, Logs) landen automatisch unter `Med-ESRGAN/runs/<laufname>/`.
 
 Minimaler Befehl:
 ```bash
@@ -58,7 +58,7 @@ python train_ct_sr.py
 ```
 
 Wichtige Optionen:
-- `--data_root`: Standard `ESRGAN/preprocessed_data`.
+- `--data_root`: Standard `Med-ESRGAN/preprocessed_data`.
 - `--scale`: Standard 2; `--epochs`: Standard 50; `--batch_size`: Standard 10; `--patch_size`: Standard 192.
 - Degradation (Standard `blurnoise`):
   - `--noise_sigma_range_norm`: Standard `0.001 0.003` (Rauschen auf [-1,1]‑Normierung; ca. bis ~10 HU)
@@ -82,11 +82,11 @@ Kurzbeschreibung:
 
 Minimaler Befehl (erfordert nur den Pfad zum vortrainierten Generator):
 ```bash
-python finetune_ct_sr.py --pretrained_g "runs\rrdb_x2_blurnoise_20250912-114004\best.pth"
+python finetune_ct_sr.py --pretrained_g "...\best.pth"
 ```
 
 Wichtige Optionen:
-- `--data_root`: Standard `ESRGAN/preprocessed_data`; `--scale`: Standard 2; `--epochs`: Standard 10.
+- `--data_root`: Standard `Med-ESRGAN/preprocessed_data`; `--scale`: Standard 2; `--epochs`: Standard 10.
 - `--warmup_g_only`: Standard 100 Iterationen nur G; `--lambda_perc`: 0.08; `--lambda_gan`: 0.003.
 - Degradation (Standard `blurnoise`): gleiche Defaults wie im Vortraining (siehe oben).
 
@@ -96,11 +96,11 @@ Wichtige Optionen:
 Script: `evaluate_ct_model.py`
 
 Kurzbeschreibung:
-- Berechnet Metriken (z. B. MAE/PSNR) und schreibt CSV/JSON sowie Plots nach `ESRGAN/eval_results/`.
+- Berechnet Metriken (z. B. MAE/PSNR) und schreibt CSV/JSON sowie Plots nach `Med-ESRGAN/eval_results/`.
 
 Minimaler Befehl (Testsplit wie in der Arbeit analysiert):
 ```bash
-python evaluate_ct_model.py --root "preprocessed_data" --split test --model_path "runs\finetune_x2_blurnoise_20250914-093436\best.pth"
+python evaluate_ct_model.py --root "preprocessed_data" --split test --model_path "...\best.pth"
 ```
 
 Wichtige Optionen:
@@ -118,7 +118,7 @@ Kurzbeschreibung:
 
 Minimaler Befehl (nur Patientenordner und Modellpfad setzen):
 ```bash
-python visualize_lr_sr_hr.py --dicom_folder "preprocessed_data\15041pp" --model_path "runs\finetune_x2_blurnoise_20250914-093436\best.pth"
+python visualize_lr_sr_hr.py --dicom_folder "preprocessed_data\15041pp" --model_path "...\best.pth"
 ```
 
 Wichtige Optionen:
@@ -143,7 +143,7 @@ Script: `count_model_params.py`
 
 Beispiel (mit geladenem Checkpoint):
 ```bash
-python count_model_params.py --scale 2 --model_path "runs\rrdb_x2_blurnoise_20250912-114004\best.pth"
+python count_model_params.py --scale 2 --model_path "...\best.pth"
 ```
 Optional: `--profile` zur MACs/FLOPs‑Schätzung; Standard‑Eingabegröße 256×256 (LR).
 
@@ -151,7 +151,7 @@ Optional: `--profile` zur MACs/FLOPs‑Schätzung; Standard‑Eingabegröße 256
 
 ## Hinweise zur Reproduzierbarkeit
 - Standard‑Seeds sind gesetzt (z. B. 42) und konsistent zwischen Split, Training und Evaluation.
-- Pfade sind relativ zum Ordner `ESRGAN` gewählt. Bitte die Beispiel‑Pfadwerte ggf. an eigene Laufordner anpassen.
+- Pfade sind relativ zum Ordner `Med-ESRGAN` gewählt. Bitte die Beispiel‑Pfadwerte ggf. an eigene Laufordner anpassen.
 - Für CPU‑Runs kann überall `--device cpu` gesetzt werden; dies ist langsamer und dient nur der Funktionsprüfung.
 
 
